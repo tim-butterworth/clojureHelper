@@ -6,8 +6,24 @@
 (import java.io.FileWriter)
 (import java.io.BufferedWriter)
 
-(defn create-new-file [file-path]
-  )
+(defn path-to-list [root]
+  (filter
+   #(not (empty? %))
+   (clojure.string/split root #"/")))
+
+(defn make-namespace [root-lst ns-lst]
+  (do
+    (println root-lst)
+    (println ns-lst)
+    (str
+     "(ns "
+     (clojure.string/join "." ns-lst)
+     ")")))
+
+(defn create-new-file [project-root file-path]
+  (let [path-lst (path-to-list project-root)
+        full-path-lst (path-to-list file-path)
+        name-space (make-namespace path-lst full-path-lst)]))
 
 (defn readerIn [reader] 
   (loop [accume []] 

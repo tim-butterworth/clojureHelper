@@ -12,23 +12,21 @@
 
 (defn local-bind [fn-var fun]
   (do
-    (println (str "fn-var->" fn-var))
-    (println (str "fun->" fun))
     (.bindRoot 
      fn-var
      fun)))
 
 (defmacro mock-fn [fn-name] 
   `(local-bind
-     ~(list `var fn-name)
-     (fn
-       [& n#] 
-       (swap! mocks 
-              (fn [mp#] 
-                (assoc mp# ~(keyword fn-name) n#))))))
+    ~(list `var fn-name)
+    (fn
+      [& n#] 
+      (swap! mocks 
+             (fn [mp#] 
+               (assoc mp# ~(keyword fn-name) n#))))))
 
 (defmacro have-called [fun & body]
-   `(let [fn-key# ~(keyword fun)]
+  `(let [fn-key# ~(keyword fun)]
      (~@body (@mocks fn-key#))))
 
 (defn with-args [& args]
@@ -59,16 +57,10 @@
             (def file-path "path-to-file")
             (mock-fn create-new-file)
             (new-file file-path)
-            (println @mocks)
             )
-  (it "calls create file with the correct path"
-      (should (have-called create-new-file
-               (with-args (str @project-root "/" file-path))))))
- )
-
-(describe 
- "create files for a clojure project"
- 
+           (it "calls create file with the correct path"
+               (should (have-called create-new-file
+                                    (with-args @project-root file-path)))))
  )
 
 (run-specs)
