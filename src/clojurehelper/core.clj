@@ -1,16 +1,10 @@
 (ns clojurehelper.core
-  (:require [clojurehelper.io.fileio :refer :all])
-  (:gen-class))
+  (:require [clojurehelper.io.fileio :refer :all]))
 
-(defn -main
-  [& args]
-  (println "Hello, World!"))
+(defn new-file-fn [project-root]
+  (fn ([file-path]
+       (create-new-project-file project-root file-path))))
 
-(def project-root
-  (atom ""))
-
-(defn set-project-root-dir [path]
-  (swap! project-root (fn [n] path)))
-
-(defn new-file [file-path]
-  (create-new-file @project-root file-path))
+(defn clojure-helper [project-root]
+  {:new-file (new-file-fn project-root)
+   :project-root project-root})

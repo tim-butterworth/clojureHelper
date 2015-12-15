@@ -10,20 +10,45 @@
 (def mocks 
   (atom {}))
 
-(defn local-bind [fn-var fun]
+(def original-fns
+  (atom {}))
+
+(defn reset-mocks []
   (do
-    (.bindRoot 
-     fn-var
-     fun)))
+    (println "done resetting the mocks")
+    (doseq [entry @original-fns]
+      (let [fn-var (entry 0)
+             original-fn (entry 1)]
+         (.bindRoot fn-var original-fn)))))
+
+(defn save-original [fn-var]
+  (do
+    (println "done saving the original")
+    (swap!
+     original-fns
+     (fn [mp]
+       (assoc mp
+              fn-var
+              (. fn-var getRawRoot))))))
+
+(defn local-bind [fn-var fun]
+  (.bindRoot 
+   fn-var
+   fun))
 
 (defmacro mock-fn [fn-name] 
-  `(local-bind
-    ~(list `var fn-name)
-    (fn
-      [& n#] 
-      (swap! mocks 
-             (fn [mp#] 
-               (assoc mp# ~(keyword fn-name) n#))))))
+  `(let [fn-var# ~(list `var fn-name)]
+     (do
+       (save-original fn-var#)
+       (local-bind
+        fn-var#
+        (fn
+          [& n#] 
+          (swap! mocks 
+                 (fn [mp#] 
+                   (do
+                     (println (str "Calling a mock... " ~(keyword fn-name)))
+                     (assoc mp# ~(keyword fn-name) n#)))))))))
 
 (defmacro have-called [fun & body]
   `(let [fn-key# ~(keyword fun)]
@@ -41,26 +66,26 @@
 (def project-root-dir
   (str (.getCanonicalPath (File. "")) "/spec/test-project"))
 
-(describe 
- "create-new-file"
- (before
-  
-  (set-project-root-dir project-root-dir)
-  (def mock-calls (atom {}))
-  )
- 
- (it "retains the project root directory"
-     (should (= @project-root project-root-dir)))
+(let [helper (clojure-helper project-root-dir)]
+    (describe 
+     "create-new-file"
+     
+     (it "retains the project root directory"
+         (should (= (helper :project-root) project-root-dir)))
 
- (describe "new-file"
-           (before
-            (def file-path "path-to-file")
-            (mock-fn create-new-file)
-            (new-file file-path)
-            )
-           (it "calls create file with the correct path"
-               (should (have-called create-new-file
-                                    (with-args @project-root file-path)))))
- )
+     (describe "new-file"
+               (before
+                (def file-path "path-to-file")
+                (mock-fn create-new-project-file)
+                ((helper :new-file) file-path))
+
+               (after
+                (reset-mocks))
+               
+               (it "calls create file with the correct path"
+                   (should (have-called create-new-project-file
+                                        (with-args project-root-dir file-path)))))
+     )
+  )
 
 (run-specs)
