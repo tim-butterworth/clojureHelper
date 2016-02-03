@@ -97,10 +97,3 @@
     (make-dir-recursively spec-directory)
     (write-file (str "/" (clojure.string/join #"/" file-path-list)) name-space)
     (write-file (str "/" (clojure.string/join #"/" spec-path-list)) spec-name-space)))
-
-;(defn readerIn [reader] 
-;  (loop [accume []] 
-;    (let [line (. reader readLine)] 
-;      (if (= nil line) 
-;        accume
-;       (recur (conj accume line))))))
