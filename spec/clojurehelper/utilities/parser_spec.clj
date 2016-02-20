@@ -1,6 +1,8 @@
 (ns clojurehelper.utilities.parser-spec
   (:require [speclj.core :refer :all]
-            [clojurehelper.utilities.parser :refer :all]))
+            [clojurehelper.spec-helper :refer :all]
+            [clojurehelper.utilities.parser :refer :all]
+            [clojurehelper.utilities.parse-namespace :as ns]))
 
 (import java.io.File)
 
@@ -16,17 +18,21 @@
     (some-fn arg1 arg2))"
   )
 
-(defn be-the-same [actual expected]
-  (let [the-same (= actual expected)
-        ]
-    (do
-      (if (not the-same)
-        (println (str "Expected: [" expected "] but got: [" actual "]")))
-      the-same)))
+(describe "parse"
 
-(describe
- "parse"
+          (before
+           (mock-fn ns/parse
+                    (fn [namspace-string]
+                      (do
+                        (println (str "NAMSPACE-STRING: -> " namspace-string))
+                        (if (= namspace-string "(ns clojurehelper.core)")
+                          {:clojurehelper.core {}}
+                          {}))))
+          )
 
+          (after
+           (reset-mocks))
+          
  (it "parses a files functions"
      (should (be-the-same
               (((parse file-str) :namespace) :functions)
@@ -47,8 +53,7 @@
               "clojurehelper.core.new-file-fn")))
  )
 
-(describe
- "seperate-file"
+(describe "seperate-file"
 
  (it "seperates each of the s-expressions"
      (should (be-the-same
@@ -59,8 +64,7 @@
                "(defn another-fn [arg1 arg2] (some-fn arg1 arg2))"
                ]))))
 
-(describe
- "update-current-expression"
+(describe "update-current-expression"
 
  (it "appends the new character to the end of the current expression" 
      (should (be-the-same
@@ -82,8 +86,7 @@
               (update-current-expression "hi " (first " "))
               "hi "))))
 
-(describe
- "update-stack"
+(describe "update-stack"
 
  (it "adds to the stack when the character is an opening character"
      (should (be-the-same
@@ -113,8 +116,7 @@
                [])))
  )
 
-(describe
- "update-current-expression"
+(describe "update-current-expression"
 
  (it "adds the expression to the result list when exiting s-expression"
      (should (be-the-same
@@ -131,8 +133,7 @@
               (update-expressions [] "kewl" [] [])
               []))))
 
-(describe
- "maybe-reset"
+(describe "maybe-reset"
  
  (it "resets the expression when the expression has already been added next-expressions"
      (should (be-the-same

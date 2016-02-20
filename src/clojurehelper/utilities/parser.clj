@@ -1,4 +1,5 @@
-(ns clojurehelper.utilities.parser)
+(ns clojurehelper.utilities.parser
+  (:require [clojurehelper.utilities.parse-namespace :as namespace]))
 
 (defn get-first-chars [lst]
   (map
@@ -68,7 +69,9 @@
 
 (defn parse [clojure-file]
   (let [seperated-file (seperate-file clojure-file)
-        ]
+        namespace (do
+                    (println (str "FIRST SEPERATED-FILE: -> " (first seperated-file)))
+                    (namespace/parse (first seperated-file)))]
     {
      :namespace
      {
