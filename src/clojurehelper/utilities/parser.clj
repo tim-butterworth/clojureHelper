@@ -69,14 +69,12 @@
 
 (defn parse [clojure-file]
   (let [seperated-file (seperate-file clojure-file)
-        namespace (do
-                    (println (str "FIRST SEPERATED-FILE: -> " (first seperated-file)))
-                    (namespace/parse (first seperated-file)))]
+        parsed-namespace (namespace/parse (first seperated-file))]
     {
      :namespace
      {
-      :functions {
-                  }
+      :name parsed-namespace
       }
-     }))
+     }
+    ))
 
